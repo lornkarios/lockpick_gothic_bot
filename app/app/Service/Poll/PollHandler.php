@@ -26,11 +26,12 @@ class PollHandler
             throw new Exception('Bot not found');
         }
         while (true) {
-            $updates = $bot->updates();
+            $updates = $bot->updates(offset: $bot->offset);
             foreach ($updates as $update) {
                 if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
                     $this->handleByMessage($bot, $update->message());
                 }
+                $bot->update(['offset' => $update->id()]);
                 Log::info('Update handled', ['update' => $update->toArray()]);
             }
             sleep(5);
