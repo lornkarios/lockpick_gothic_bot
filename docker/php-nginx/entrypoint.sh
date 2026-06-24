@@ -6,5 +6,7 @@ php artisan migrate --force
 echo "Optimize"
 php artisan optimize
 
-echo "Run FPM"
-php-fpm
+echo "Start polling events"
+php artisan schedule:work 2>&1
+
+
