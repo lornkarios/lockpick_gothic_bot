@@ -45,12 +45,9 @@ class UnlockHandlerTest extends TestCase
 
         $lockpick->refresh();
         $this->assertSame(Status::UNLOCKED, $lockpick->status->name);
-
-        $histories = LockpickHistory::query()->where('lockpick_id', $lockpick->id)->orderBy('id')->get();
-        $this->assertCount(1, $histories);
-        $this->assertSame(4, $histories[0]->lock_state->lever(1)->position());
-        $this->assertSame(4, $histories[0]->lock_state->lever(2)->position());
-        $this->assertSame(4, $histories[0]->lock_state->lever(3)->position());
+        $this->assertHistorySequence($lockpick, [
+            ['state' => [4, 4, 4]],
+        ]);
     }
 
     public function test_handle_finds_solution(): void
@@ -74,24 +71,10 @@ class UnlockHandlerTest extends TestCase
 
         $lockpick->refresh();
         $this->assertSame(Status::UNLOCKED, $lockpick->status->name);
-        $this->assertDatabaseCount('lockpick_histories', 3);
-        $this->assertDatabaseHas('lockpick_histories', [
-            'lockpick_id' => $lockpick->id,
-            'lock_state' => json_encode([3, 4, 4]),
-            'is_up' => null,
-            'lever_number' => null,
-        ]);
-        $this->assertDatabaseHas('lockpick_histories', [
-            'lockpick_id' => $lockpick->id,
-            'lock_state' => json_encode([3, 3, 4]),
-            'is_up' => true,
-            'lever_number' => 2,
-        ]);
-        $this->assertDatabaseHas('lockpick_histories', [
-            'lockpick_id' => $lockpick->id,
-            'lock_state' => json_encode([4, 4, 4]),
-            'is_up' => false,
-            'lever_number' => 1,
+        $this->assertHistorySequence($lockpick, [
+            ['state' => [3, 4, 4]],
+            ['state' => [3, 3, 4], 'is_up' => true, 'lever_number' => 2],
+            ['state' => [4, 4, 4], 'is_up' => false, 'lever_number' => 1],
         ]);
     }
 
@@ -116,5 +99,17 @@ class UnlockHandlerTest extends TestCase
 
         $lockpick->refresh();
         $this->assertSame(Status::NOT_UNLOCKABLE, $lockpick->status->name);
+    }
+
+    private function assertHistorySequence(Lockpick $lockpick, array $expectedSequence): void
+    {
+        $histories = LockpickHistory::query()->where('lockpick_id', $lockpick->id)->orderBy('id')->get();
+        $this->assertCount(count($expectedSequence), $histories);
+
+        foreach ($expectedSequence as $i => $expected) {
+            $this->assertSame($expected['state'], $histories[$i]->lock_state->toArray());
+            $this->assertSame($expected['is_up'] ?? null, $histories[$i]->is_up);
+            $this->assertSame($expected['lever_number'] ?? null, $histories[$i]->lever_number);
+        }
     }
 }
