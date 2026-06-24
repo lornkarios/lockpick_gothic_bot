@@ -16,6 +16,6 @@ class BotPoll extends Command
     {
         $pollHandler->handle();
 
-        return self::FAILURE;
+        return self::SUCCESS;
     }
 }
