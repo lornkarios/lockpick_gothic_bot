@@ -26,8 +26,11 @@ class AsLockState implements CastsAttributes
     /**
      * @param array<string, mixed> $attributes
      */
-    public function set(Model $model, string $key, mixed $value, array $attributes): string
+    public function set(Model $model, string $key, mixed $value, array $attributes): ?string
     {
+        if (is_null($value)) {
+            return null;
+        }
         if (!$value instanceof LockState) {
             throw new InvalidArgumentException('The given value is not an LockState instance.');
         }
