@@ -3,10 +3,10 @@
 echo "Run artisan migrations"
 php artisan migrate --force
 
-echo "Generate swagger"
+echo "Optimize"
 php artisan optimize
 
-echo "Run FPM"
-php-fpm
+echo "Start polling events"
+php artisan bot:poll
 
 
