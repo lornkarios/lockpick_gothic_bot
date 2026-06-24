@@ -12,6 +12,7 @@ use App\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PollHandler
 {
@@ -21,20 +22,24 @@ class PollHandler
 
     public function handle(): void
     {
-        $bot = TelegraphBot::query()->first();
-        if (!$bot) {
-            throw new Exception('Bot not found');
-        }
-        while (true) {
-            $updates = $bot->updates(offset: $bot->offset);
-            foreach ($updates as $update) {
-                if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
-                    $this->handleByMessage($bot, $update->message());
-                }
-                $bot->update(['offset' => $update->id()]);
-                Log::info('Update handled', ['update' => $update->toArray()]);
+        try {
+            $bot = TelegraphBot::query()->first();
+            if (!$bot) {
+                throw new Exception('Bot not found');
             }
-            sleep(5);
+            while (true) {
+                $updates = $bot->updates(offset: $bot->offset);
+                foreach ($updates as $update) {
+                    if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
+                        $this->handleByMessage($bot, $update->message());
+                    }
+                    $bot->update(['offset' => $update->id()]);
+                    Log::info('Update handled', ['update' => $update->toArray()]);
+                }
+                sleep(5);
+            }
+        } catch (Throwable $e) {
+            Log::error($e->getMessage(), ['trace' => $e->getTrace(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
         }
     }
 
@@ -73,7 +78,7 @@ class PollHandler
     private function needConfiguration(TelegraphChat $chat, Message $message, Lockpick $lockpick): void
     {
         //TODO validate config
-        if($invalid){
+        if ($invalid) {
             $chat->message(__('telegram_bot.invalid_config'))->send();
         }
         //TODO create config from message
@@ -87,7 +92,7 @@ class PollHandler
     private function needState(TelegraphChat $chat, Message $message, Lockpick $lockpick): void
     {
         //TODO validate state
-        if($invalid){
+        if ($invalid) {
             $chat->message(__('telegram_bot.invalid_state'))->send();
         }
         //TODO create state from message
@@ -96,7 +101,6 @@ class PollHandler
         $lockpick->status_id = LockpickStatus::firstByName(Status::UNLOCKING)->id;
         $lockpick->save();
         $chat->message(__('telegram_bot.state_valid'))->send();
-
         //TODO unlocking lock
     }
 }
