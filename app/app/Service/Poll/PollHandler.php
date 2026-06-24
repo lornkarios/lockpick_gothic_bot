@@ -82,6 +82,7 @@ class PollHandler
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+            $chat->message('Произошла ошибка. Мы уже работаем над этим')->send();
         }
     }
 
@@ -135,6 +136,7 @@ class PollHandler
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
             ]);
+            $chat->message('Произошла ошибка. Мы уже работаем над этим')->send();
         }
     }
 }
