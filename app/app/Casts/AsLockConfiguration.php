@@ -41,15 +41,15 @@ class AsLockConfiguration implements CastsAttributes
             throw new InvalidArgumentException('The given value is not an LockConfiguration instance.');
         }
         $leversArr = [];
-        foreach ($value->levers as $lever) {
+        foreach ($value->levers() as $lever) {
             $leversArr[] = [
-                'number' => $lever->number,
+                'number' => $lever->number(),
                 'affects' => array_map(
                     fn(LeverAffect $affect) => [
-                        'number' => $affect->number,
-                        'direction' => $affect->direction->value,
+                        'number' => $affect->number(),
+                        'direction' => $affect->direction()->value,
                     ],
-                    $lever->affects,
+                    $lever->affects(),
                 ),
             ];
         }

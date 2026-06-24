@@ -9,7 +9,17 @@ class LeverConfiguration
     /**
      * @param LeverAffect[] $affects
      */
-    public function __construct(public readonly int $number, public readonly array $affects)
+    public function __construct(private int $number, private array $affects)
     {
+    }
+
+    public function number(): int
+    {
+        return $this->number;
+    }
+
+    public function affects(): array
+    {
+        return $this->affects;
     }
 }

@@ -11,4 +11,5 @@ enum Status: string
     case UNLOCKING = 'Unlocking';
     case UNLOCKED = 'Unlocked';
     case STEP_BY_STEP_UNLOCKING = 'StepByStepUnlocking';
+    case NOT_UNLOCKABLE = 'NotUnlockable';
 }

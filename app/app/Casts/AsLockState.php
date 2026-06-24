@@ -35,10 +35,10 @@ class AsLockState implements CastsAttributes
             throw new InvalidArgumentException('The given value is not an LockState instance.');
         }
         $leversArr = [];
-        foreach ($value->levers as $lever) {
+        foreach ($value->levers() as $lever) {
             $leversArr[] = [
-                'number' => $lever->number,
-                'position' => $lever->position,
+                'number' => $lever->number(),
+                'position' => $lever->position(),
             ];
         }
         return json_encode($leversArr);

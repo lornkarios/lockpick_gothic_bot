@@ -52,8 +52,12 @@ class PollHandler
         $status = $lockpick?->status->name;
         match (true) {
             $message->text() === '/start' => StartHandler::dispatch($chat),
-            $status === Status::START => NeedConfigurationHandler::dispatch($chat, $message, $lockpick),
-            $status === Status::CONFIGURATION => NeedStateHandler::dispatch($chat, $message, $lockpick),
+            $status === Status::START => NeedConfigurationHandler::dispatch($message, $lockpick),
+            $status === Status::CONFIGURATION => NeedStateHandler::dispatch($message, $lockpick),
+            $status === Status::UNLOCKING =>
+                $chat->message('Замок в процессе открытия подождите')->send(),
+            $status === Status::UNLOCKED =>
+                 $chat->message('Замок открыт')->send(),
         };
     }
 }

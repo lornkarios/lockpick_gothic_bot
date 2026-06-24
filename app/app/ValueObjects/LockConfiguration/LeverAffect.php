@@ -8,7 +8,17 @@ use App\Enums\Direction;
 
 class LeverAffect
 {
-    public function __construct(public readonly int $number, public readonly Direction $direction)
+    public function __construct(private int $number, private Direction $direction)
     {
+    }
+
+    public function number(): int
+    {
+        return $this->number;
+    }
+
+    public function direction(): Direction
+    {
+        return $this->direction;
     }
 }
