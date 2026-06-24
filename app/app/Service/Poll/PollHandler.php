@@ -22,28 +22,22 @@ class PollHandler
 
     public function handle(): void
     {
-        dump(1);
         $bot = TelegraphBot::query()->first();
 
-        dump(2);
         if (!$bot) {
             throw new Exception('Bot not found');
         }
 
-        dump(3);
-        while (true) {
-            $updates = $bot->updates(offset: $bot->offset);
-            dump(4);
-            foreach ($updates as $update) {
-                if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
-                    $this->handleByMessage($bot, $update->message());
-                }
-                $bot->update(['offset' => $update->id()]);
-                Log::info('Update handled', ['update' => $update->toArray()]);
+        $updates = $bot->updates(offset: $bot->offset + 1);
+
+        foreach ($updates as $update) {
+            if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
+                $this->handleByMessage($bot, $update->message());
             }
-            sleep(5);
+            $bot->update(['offset' => $update->id()]);
+            Log::info('Update handled', ['update' => $update->toArray()]);
         }
-        dump(5);
+        sleep(5);
     }
 
     private function handleByMessage(TelegraphBot $bot, Message $message): void
