@@ -32,9 +32,7 @@ class UnlockHandler
         if (!$result['status']) {
             $this->lockpick->status_id = LockpickStatus::firstByName(Status::NOT_UNLOCKABLE)->id;
             $this->lockpick->save();
-            $this->lockpick->chat->message(
-                'Этот замок невозможно взломать :( Введите /start чтобы начать заново'
-            )->send();
+            $this->lockpick->chat->message(__('telegram_bot.unlock_impossible'))->send();
             return;
         }
 
@@ -44,10 +42,10 @@ class UnlockHandler
             $this->lockpick->save();
         });
 
-        $this->lockpick->chat->message('Замок успешно взломан!')
+        $this->lockpick->chat->message(__('telegram_bot.unlock_success'))
             ->keyboard(fn(Keyboard $keyboard) => $keyboard->buttons([
-                Button::make('Пошагово')->action('step_by_step'),
-                Button::make('Полная инструкция')->action('full_instruction'),
+                Button::make(__('telegram_bot.step_by_step'))->action('step_by_step'),
+                Button::make(__('telegram_bot.full_instruction'))->action('full_instruction'),
             ]))
             ->send();
     }

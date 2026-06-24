@@ -6,6 +6,7 @@ namespace App\Service\Poll;
 
 use App\Enums\Status;
 use App\Models\Lockpick;
+use App\Service\UnlockStates\FullInstructionHandler;
 use App\Service\UnlockStates\NeedConfigurationHandler;
 use App\Service\UnlockStates\NeedStateHandler;
 use App\Service\UnlockStates\StartHandler;
@@ -55,9 +56,8 @@ class PollHandler
             $status === Status::START => NeedConfigurationHandler::dispatch($message, $lockpick),
             $status === Status::CONFIGURATION => NeedStateHandler::dispatch($message, $lockpick),
             $status === Status::UNLOCKING =>
-                $chat->message('Замок в процессе открытия подождите')->send(),
-            $status === Status::UNLOCKED =>
-                 $chat->message('Замок открыт')->send(),
+                $chat->message(__('telegram_bot.unlocking_in_progress'))->send(),
+            $status === Status::UNLOCKED => FullInstructionHandler::dispatch($lockpick),
         };
     }
 }

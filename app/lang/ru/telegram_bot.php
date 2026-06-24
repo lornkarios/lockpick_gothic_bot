@@ -13,4 +13,11 @@ return [
     'state_valid' => 'Все настройки успешно приняты! Начинаю вскрытие замка...',
     'unlock_success' => 'Замок успешно взломан!',
     'unlock_impossible' => 'Этот замок невозможно взломать :(',
+    'unlocking_in_progress' => 'Замок в процессе открытия, подождите',
+    'already_unlocked' => 'Замок уже открыт!',
+    'step_by_step' => 'Пошагово',
+    'full_instruction' => 'Полная инструкция',
+    'instruction_step' => ':step. :lever часть :direction',
+    'direction_up' => 'вверх',
+    'direction_down' => 'вниз',
 ];
