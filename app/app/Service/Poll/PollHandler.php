@@ -19,6 +19,7 @@ use App\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 class PollHandler
 {
@@ -57,22 +58,27 @@ class PollHandler
         $lockpick = Lockpick::query()->where(['chat_id' => $chat->id])->first();
 
         $status = $lockpick?->status->name;
-        match (true) {
-            $message->text() === '/start' => StartHandler::dispatch($chat),
-            $status === Status::START => NeedConfigurationHandler::dispatch($message, $lockpick),
-            $status === Status::CONFIGURATION => NeedStateHandler::dispatch($message, $lockpick),
-            $status === Status::UNLOCKING =>
+        try {
+            match (true) {
+                $message->text() === '/start' => StartHandler::dispatch($chat),
+                $status === Status::START => NeedConfigurationHandler::dispatch($message, $lockpick),
+                $status === Status::CONFIGURATION => NeedStateHandler::dispatch($message, $lockpick),
+                $status === Status::UNLOCKING =>
                 $chat->message(__('telegram_bot.unlocking_in_progress'))->send(),
-            $status === Status::UNLOCKED =>
+                $status === Status::UNLOCKED =>
                 $chat->message(__('telegram_bot.already_unlocked'))
                     ->keyboard(fn(Keyboard $keyboard) => $keyboard->buttons([
                         Button::make(__('telegram_bot.step_by_step'))->action('step_by_step'),
                         Button::make(__('telegram_bot.full_instruction'))->action('full_instruction'),
                     ]))
                     ->send(),
-            $status === Status::STEP_BY_STEP_UNLOCKING =>
+                $status === Status::STEP_BY_STEP_UNLOCKING =>
                 $chat->message(__('telegram_bot.step_reminder'))->send(),
-        };
+            };
+        } catch (Throwable $e) {
+            $chat->message('Произошла ошибка - ' . $e->getMessage());
+            throw  $e;
+        }
     }
 
     private function handleByCallback(TelegraphBot $bot, CallbackQuery $callbackQuery): void
@@ -84,32 +90,37 @@ class PollHandler
         }
 
         $chatId = $callbackQuery->message()->chat()->id();
-        /** @var TelegraphChat $chat */
-        $chat = $bot->chats()->firstOrCreate(['chat_id' => $chatId]);
-        /** @var Lockpick|null $lockpick */
-        $lockpick = Lockpick::query()->where(['chat_id' => $chat->id])->first();
+        try {
+            /** @var TelegraphChat $chat */
+            $chat = $bot->chats()->firstOrCreate(['chat_id' => $chatId]);
+            /** @var Lockpick|null $lockpick */
+            $lockpick = Lockpick::query()->where(['chat_id' => $chat->id])->first();
 
-        if (!$lockpick) {
-            return;
-        }
+            if (!$lockpick) {
+                return;
+            }
 
-        $status = $lockpick->status->name;
+            $status = $lockpick->status->name;
 
-        if ($action === 'full_instruction' && $status === Status::UNLOCKED) {
-            $bot->replyWebhook($callbackQuery->id(), '')->send();
-            FullInstructionHandler::dispatch($lockpick);
-            return;
-        }
+            if ($action === 'full_instruction' && $status === Status::UNLOCKED) {
+                $bot->replyWebhook($callbackQuery->id(), '')->send();
+                FullInstructionHandler::dispatch($lockpick);
+                return;
+            }
 
-        if ($action === 'step_by_step' && $status === Status::UNLOCKED) {
-            $bot->replyWebhook($callbackQuery->id(), '')->send();
-            StepByStepHandler::dispatch($lockpick);
-            return;
-        }
+            if ($action === 'step_by_step' && $status === Status::UNLOCKED) {
+                $bot->replyWebhook($callbackQuery->id(), '')->send();
+                StepByStepHandler::dispatch($lockpick);
+                return;
+            }
 
-        if ($action === 'next_step' && $status === Status::STEP_BY_STEP_UNLOCKING) {
-            $bot->replyWebhook($callbackQuery->id(), '')->send();
-            StepByStepHandler::dispatch($lockpick, true);
+            if ($action === 'next_step' && $status === Status::STEP_BY_STEP_UNLOCKING) {
+                $bot->replyWebhook($callbackQuery->id(), '')->send();
+                StepByStepHandler::dispatch($lockpick, true);
+            }
+        } catch (Throwable $e) {
+            $chat->message('Произошла ошибка - ' . $e->getMessage());
+            throw  $e;
         }
     }
 }
