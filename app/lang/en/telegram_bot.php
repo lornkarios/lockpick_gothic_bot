@@ -20,8 +20,8 @@ return [
     'instruction_step' => ':step. Lever :lever :direction',
     'direction_up' => 'up',
     'direction_down' => 'down',
-    'step_message' => "Current state: :state\nMove lever :lever :direction",
-    'step_final' => 'All steps complete! Lock is unlocked.',
+    'step_message' => ":visual\nMove lever :lever :direction",
+    'step_final' => ":visual\nAll steps complete! Lock is unlocked.",
     'next_step' => 'Next step',
     'step_reminder' => 'Click "Next step" to continue',
 ];

@@ -20,8 +20,8 @@ return [
     'instruction_step' => ':step. :lever часть :direction',
     'direction_up' => 'вверх',
     'direction_down' => 'вниз',
-    'step_message' => "Текущее состояние: :state\nПередвинь :lever часть :direction",
-    'step_final' => 'Все шаги выполнены! Замок открыт.',
+    'step_message' => ":visual\nПередвинь :lever часть :direction",
+    'step_final' => ":visual\nВсе шаги выполнены! Замок открыт.",
     'next_step' => 'Следующий шаг',
     'step_reminder' => 'Нажми "Следующий шаг", чтобы продолжить',
 ];
