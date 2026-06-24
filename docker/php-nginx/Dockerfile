@@ -7,7 +7,6 @@ RUN apt-get update \
         libonig-dev \
         libpng-dev  \
         git \
-        nginx \
     && docker-php-ext-install bcmath pdo pdo_mysql zip gd mbstring exif pcntl
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
@@ -31,19 +30,13 @@ RUN sed -i 's,^\(MinProtocol[ ]*=\).*,\1'TLSv1.0',g' /etc/ssl/openssl.cnf  \
 RUN docker-php-ext-enable opcache
 RUN docker-php-ext-install sockets
 
-RUN apt-get install -y nginx && useradd -u 1000 -m www
+RUN useradd -u 1000 -m www
 
 COPY ./docker/php-nginx/www.conf               /usr/local/etc/php-fpm.d/zz-docker.conf
 COPY ./docker/php-nginx/conf.d/php.ini         /usr/local/etc/php/conf.d/php.iniconf.d
-COPY ./docker/php-nginx/nginx.conf             /etc/nginx/nginx.conf
 COPY ./docker/php-nginx/entrypoint.sh          /entrypoint.sh
 
-RUN chmod +x /entrypoint.sh \
-    && mkdir -p /var/lib/nginx/body \
-    && chown -R www:www /var/lib/nginx/ \
-    && touch /run/nginx.pid \
-    && chown -R www:www /run/nginx.pid \
-    && chown -R www:www /var/log/nginx/
+RUN chmod +x /entrypoint.sh
 
 COPY --chown=www:www ./app /var/www/html
 

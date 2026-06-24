@@ -41,6 +41,29 @@ jobs:
     name: Update server buy ssh
     runs-on: ubuntu-latest
     steps:
+      - name: Copy deploy files to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          source: "root/lockpick_gothic_bot/php/*"
+          target: "/root/lockpick_gothic_bot/php"
+          strip_components: 3
+
+      - name: Create .env file on server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          port: ${{ secrets.SERVER_PORT }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: |
+            cat > /root/lockpick_gothic_bot/php/.env << 'EOF'
+            ${{ secrets.ENV_FILE }}
+            EOF
+
       - name: Connect and run script
         uses: appleboy/ssh-action@master
         with:
@@ -49,4 +72,4 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script_stop: true
-          script: cd /home/akov/php && bash deploy.sh
+          script: cd /root/lockpick_gothic_bot/php && bash deploy.sh

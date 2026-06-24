@@ -34,8 +34,6 @@ services:
     environment:
       PHP_IDE_CONFIG: "serverName=localhost"
     entrypoint: ["bash", "-c","nginx -t & composer install & nginx & php-fpm"]
-    ports:
-      - ${NGINX_PORT}:8080
     networks:
       - lockpick_gothic_bot_network
 

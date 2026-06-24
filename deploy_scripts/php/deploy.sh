@@ -6,8 +6,8 @@ docker image rm lornkarios/lockpick-gothic-api-bot
 echo "Pull image"
 docker pull lornkarios/lockpick-gothic-api-bot
 echo "Start php container"
-cd /home/akov/php
+cd /root/lockpick_gothic_bot/php
 docker run
-  -v ./.well-known:/var/www/html/.well-known \
+  --network=lockpick_gothic_bot_network \
   lornkarios/lockpick-gothic-api-bot
 echo "Finish deploying!"
