@@ -22,5 +22,9 @@ use Illuminate\Support\Carbon;
  */
 class TelegraphBot extends BaseBot
 {
-
+    protected $fillable = [
+        'token',
+        'name',
+        'offset',
+    ];
 }
