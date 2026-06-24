@@ -8,7 +8,7 @@ use App\Enums\Status;
 use App\Models\Lockpick;
 use App\Models\LockpickStatus;
 use DefStudio\Telegraph\DTO\Message;
-use DefStudio\Telegraph\Models\TelegraphBot;
+use App\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use Exception;
 use Illuminate\Support\Facades\Log;
