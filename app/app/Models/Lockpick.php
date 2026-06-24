@@ -34,6 +34,8 @@ use Illuminate\Support\Collection;
  */
 class Lockpick extends Model
 {
+    protected $guarded = ['id'];
+
     protected function casts(): array
     {
         return [

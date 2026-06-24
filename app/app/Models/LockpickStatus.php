@@ -22,6 +22,8 @@ use Illuminate\Support\Carbon;
  */
 class LockpickStatus extends Model
 {
+    protected $guarded = ['id'];
+
     protected function casts(): array
     {
         return [
