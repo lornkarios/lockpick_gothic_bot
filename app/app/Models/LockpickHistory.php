@@ -14,6 +14,8 @@ use Illuminate\Support\Carbon;
  * @property integer $lockpick_id
  * @property-read Lockpick $lockpick
  * @property LockState $lock_state
+ * @property boolean|null $is_up
+ * @property integer|null $lever_number
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @method static Builder|self newModelQuery()
@@ -28,6 +30,7 @@ class LockpickHistory extends Model
     {
         return [
             'lock_state' => AsLockState::class,
+            'is_up' => 'boolean',
         ];
     }
 

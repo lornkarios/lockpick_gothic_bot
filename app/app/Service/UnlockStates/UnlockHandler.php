@@ -27,25 +27,16 @@ class UnlockHandler
     {
         $lock = new Lock($this->lockpick->lock_configuration, $this->lockpick->lock_state);
 
-        $result = $this->unlock($lock);
+        $result = $this->unlock($lock, [['state' => $lock->state()->toArray()]]);
 
         if (!$result['status']) {
             $this->lockpick->status_id = LockpickStatus::firstByName(Status::NOT_UNLOCKABLE)->id;
             $this->lockpick->save();
-            $this->lockpick->chat->message('Этот замок невозможно взломать :( Введите /start чтобы начать заново')->send();
+            $this->lockpick->chat->message(
+                'Этот замок невозможно взломать :( Введите /start чтобы начать заново'
+            )->send();
             return;
         }
-
-        if (empty($result['history'])) {
-            $result['history'] = [$lock->state()->toArray()];
-        }
-
-        $lastState = end($result['history']);
-        $levers = [];
-        foreach ($lastState as $index => $position) {
-            $levers[] = new LeverState($index + 1, $position);
-        }
-        $this->lockpick->lock_state = new LockState($levers);
 
         DB::transaction(function () use ($result) {
             $this->saveHistory($result['history']);
@@ -63,13 +54,16 @@ class UnlockHandler
 
     private function saveHistory(array $historyStates): void
     {
-        foreach ($historyStates as $stateArray) {
+        foreach ($historyStates as $historyState) {
             $levers = [];
+            $stateArray = $historyState['state'];
             foreach ($stateArray as $index => $position) {
                 $levers[] = new LeverState($index + 1, $position);
             }
             $this->lockpick->history()->create([
                 'lock_state' => new LockState($levers),
+                'is_up' => $historyState['is_up'] ?? null,
+                'lever_number' => $historyState['lever_number'] ?? null,
             ]);
         }
     }
@@ -79,8 +73,6 @@ class UnlockHandler
         if ($lock->isUnlocked()) {
             return ['status' => true, 'history' => $historyStates];
         }
-
-
         for ($leverNumber = 1; $leverNumber <= $lock->leversCount(); $leverNumber++) {
             $res = $this->unlockStep($lock, $historyStates, $leverNumber, 'up');
             if (!is_null($res)) {
@@ -103,7 +95,17 @@ class UnlockHandler
                 $this->move($lock, $leverNumber, $this->inverseDirection($direction));
                 return ['status' => false, 'history' => $historyStates];
             }
-            $res = $this->unlock($lock, array_merge($historyStates, [$lock->state()->toArray()]));
+            $res = $this->unlock(
+                $lock,
+                array_merge(
+                    $historyStates,
+                    [[
+                        'state' => $lock->state()->toArray(),
+                        'lever_number' => $leverNumber,
+                        'is_up' => $direction === 'up',
+                    ]],
+                )
+            );
             if ($res['status']) {
                 $this->move($lock, $leverNumber, $this->inverseDirection($direction));
                 return $res;
@@ -139,6 +141,7 @@ class UnlockHandler
 
     private function isStateAlreadyPassed(array $state, array $historyStates): bool
     {
-        return in_array($state, $historyStates, true);
+        $states = array_map(fn(array $historyState) => $historyState['state'], $historyStates);
+        return in_array($state, $states, true);
     }
 }

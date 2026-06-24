@@ -7,6 +7,7 @@ namespace Tests\Feature;
 use App\Enums\Direction;
 use App\Enums\Status;
 use App\Models\Lockpick;
+use App\Models\LockpickHistory;
 use App\Service\UnlockStates\UnlockHandler;
 use App\ValueObjects\LockConfiguration\LeverAffect;
 use App\ValueObjects\LockConfiguration\LeverConfiguration;
@@ -44,6 +45,12 @@ class UnlockHandlerTest extends TestCase
 
         $lockpick->refresh();
         $this->assertSame(Status::UNLOCKED, $lockpick->status->name);
+
+        $histories = LockpickHistory::query()->where('lockpick_id', $lockpick->id)->orderBy('id')->get();
+        $this->assertCount(1, $histories);
+        $this->assertSame(4, $histories[0]->lock_state->lever(1)->position());
+        $this->assertSame(4, $histories[0]->lock_state->lever(2)->position());
+        $this->assertSame(4, $histories[0]->lock_state->lever(3)->position());
     }
 
     public function test_handle_finds_solution(): void
@@ -66,10 +73,26 @@ class UnlockHandlerTest extends TestCase
         $handler->handle();
 
         $lockpick->refresh();
-        $this->assertSame(4, $lockpick->lock_state->lever(1)->position());
-        $this->assertSame(4, $lockpick->lock_state->lever(2)->position());
-        $this->assertSame(4, $lockpick->lock_state->lever(3)->position());
         $this->assertSame(Status::UNLOCKED, $lockpick->status->name);
+        $this->assertDatabaseCount('lockpick_histories', 3);
+        $this->assertDatabaseHas('lockpick_histories', [
+            'lockpick_id' => $lockpick->id,
+            'lock_state' => json_encode([3, 4, 4]),
+            'is_up' => null,
+            'lever_number' => null,
+        ]);
+        $this->assertDatabaseHas('lockpick_histories', [
+            'lockpick_id' => $lockpick->id,
+            'lock_state' => json_encode([3, 3, 4]),
+            'is_up' => true,
+            'lever_number' => 2,
+        ]);
+        $this->assertDatabaseHas('lockpick_histories', [
+            'lockpick_id' => $lockpick->id,
+            'lock_state' => json_encode([4, 4, 4]),
+            'is_up' => false,
+            'lever_number' => 1,
+        ]);
     }
 
     public function test_handle_impossible_lock(): void
