@@ -69,28 +69,28 @@ class PollHandler
             ],
         );
         $lockpick->history()->delete();
-        $chat->message(__('telegram_bot.welcome'))->send();
+        $chat->message(__('telegram_bot.welcome') . __('telegram_bot.config_rule'))->send();
     }
 
     private function needConfiguration(TelegraphChat $chat, Message $message, Lockpick $lockpick): void
     {
         //TODO validate config
         if ($invalid) {
-            $chat->message(__('telegram_bot.invalid_config'))->send();
+            $chat->message(__('telegram_bot.invalid_config') . __('telegram_bot.config_rule'))->send();
         }
         //TODO create config from message
 
         $lockpick->lock_configuration = $lockConfig;
         $lockpick->status_id = LockpickStatus::firstByName(Status::CONFIGURATION)->id;
         $lockpick->save();
-        $chat->message(__('telegram_bot.config_valid'))->send();
+        $chat->message(__('telegram_bot.config_valid'). __('telegram_bot.state_rule'))->send();
     }
 
     private function needState(TelegraphChat $chat, Message $message, Lockpick $lockpick): void
     {
         //TODO validate state
         if ($invalid) {
-            $chat->message(__('telegram_bot.invalid_state'))->send();
+            $chat->message(__('telegram_bot.invalid_state'). __('telegram_bot.state_rule'))->send();
         }
         //TODO create state from message
 
