@@ -7,6 +7,6 @@ echo "Optimize"
 php artisan optimize
 
 echo "Start polling events"
-php artisan bot:poll
+php artisan bot:poll 2>&1
 
 
