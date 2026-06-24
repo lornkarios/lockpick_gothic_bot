@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('bot:poll')
-    ->everyTenSeconds()
+    ->everySecond()
     ->onOneServer();
 
 Artisan::command('inspire', function () {
