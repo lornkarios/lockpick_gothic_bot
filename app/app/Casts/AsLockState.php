@@ -13,8 +13,12 @@ class AsLockState implements CastsAttributes
     /**
      * @param array<string, mixed> $attributes
      */
-    public function get(Model $model, string $key, mixed $value, array $attributes): LockState
+    public function get(Model $model, string $key, mixed $value, array $attributes): ?LockState
     {
+        if ($value === null) {
+            return null;
+        }
+
         $leversArr = json_decode($value, true);
         $levers = [];
         foreach ($leversArr as $leverArr) {

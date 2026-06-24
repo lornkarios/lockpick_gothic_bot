@@ -31,7 +31,7 @@ class NeedConfigurationHandler
             return;
         }
         $lockpick->lock_configuration = $this->makeConfig($configTxt);
-        $lockpick->lock_levers_count = count($lockpick->lock_state->levers());
+        $lockpick->lock_levers_count = count($lockpick->lock_configuration->levers());
         $lockpick->status_id = LockpickStatus::firstByName(Status::CONFIGURATION)->id;
         $lockpick->save();
         $lockpick->chat->message(__('telegram_bot.config_valid') . __('telegram_bot.state_rule'))->send();

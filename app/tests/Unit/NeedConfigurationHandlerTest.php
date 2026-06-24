@@ -84,6 +84,7 @@ class NeedConfigurationHandlerTest extends TestCase
             'mixed with others only' => ['4:[2+ 3-,1-,4+,2+ 1-]'],
             'no affects for some levers' => ['3:[2+, ,1+]'],
             'duplicate affect across different groups' => ['3:[2+,3+,2+]'],
+            'empty array 3 count' => ['3:[,,]'],
         ];
     }
 

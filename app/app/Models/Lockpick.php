@@ -25,8 +25,8 @@ use Illuminate\Support\Collection;
  * @property integer $status_id
  * @property-read LockpickStatus $status
  * @property integer $lock_levers_count
- * @property LockConfiguration $lock_configuration
- * @property LockState $lock_state
+ * @property LockConfiguration|null $lock_configuration
+ * @property LockState|null $lock_state
  * @property integer $lockpick_history_id
  * @property-read LockpickHistory $historyStep
  * @property-read Collection<LockpickHistory> $history

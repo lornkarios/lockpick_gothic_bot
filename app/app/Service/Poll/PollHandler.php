@@ -79,6 +79,8 @@ class PollHandler
             Log::error('Message handling error: ' . $e->getMessage(), [
                 'text' => $message->text(),
                 'chat_id' => $message->chat()->id(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }
@@ -130,6 +132,8 @@ class PollHandler
             Log::error('Callback handling error: ' . $e->getMessage(), [
                 'action' => $action,
                 'chat_id' => $message->chat()->id() ?? null,
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
             ]);
         }
     }

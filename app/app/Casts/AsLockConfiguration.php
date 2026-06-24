@@ -15,8 +15,12 @@ class AsLockConfiguration implements CastsAttributes
     /**
      * @param array<string, mixed> $attributes
      */
-    public function get(Model $model, string $key, mixed $value, array $attributes): LockConfiguration
+    public function get(Model $model, string $key, mixed $value, array $attributes): ?LockConfiguration
     {
+        if ($value === null) {
+            return null;
+        }
+
         $leversArr = json_decode($value, true);
         $levers = [];
         foreach ($leversArr as $leverArr) {
