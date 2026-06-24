@@ -12,7 +12,7 @@ use App\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use Exception;
 use Illuminate\Support\Facades\Log;
-use Throwable;
+
 
 class PollHandler
 {
@@ -22,24 +22,20 @@ class PollHandler
 
     public function handle(): void
     {
-        try {
-            $bot = TelegraphBot::query()->first();
-            if (!$bot) {
-                throw new Exception('Bot not found');
-            }
-            while (true) {
-                $updates = $bot->updates(offset: $bot->offset);
-                foreach ($updates as $update) {
-                    if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
-                        $this->handleByMessage($bot, $update->message());
-                    }
-                    $bot->update(['offset' => $update->id()]);
-                    Log::info('Update handled', ['update' => $update->toArray()]);
+        $bot = TelegraphBot::query()->first();
+        if (!$bot) {
+            throw new Exception('Bot not found');
+        }
+        while (true) {
+            $updates = $bot->updates(offset: $bot->offset);
+            foreach ($updates as $update) {
+                if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
+                    $this->handleByMessage($bot, $update->message());
                 }
-                sleep(5);
+                $bot->update(['offset' => $update->id()]);
+                Log::info('Update handled', ['update' => $update->toArray()]);
             }
-        } catch (Throwable $e) {
-            Log::error($e->getMessage(), ['trace' => $e->getTrace(), 'file' => $e->getFile(), 'line' => $e->getLine()]);
+            sleep(5);
         }
     }
 
