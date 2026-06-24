@@ -10,12 +10,14 @@ use App\Service\UnlockStates\FullInstructionHandler;
 use App\Service\UnlockStates\NeedConfigurationHandler;
 use App\Service\UnlockStates\NeedStateHandler;
 use App\Service\UnlockStates\StartHandler;
+use DefStudio\Telegraph\DTO\CallbackQuery;
 use DefStudio\Telegraph\DTO\Message;
+use DefStudio\Telegraph\Keyboard\Button;
+use DefStudio\Telegraph\Keyboard\Keyboard;
 use App\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
 use Exception;
 use Illuminate\Support\Facades\Log;
-
 
 class PollHandler
 {
@@ -34,9 +36,12 @@ class PollHandler
         $updates = $bot->updates(offset: $bot->offset + 1);
 
         foreach ($updates as $update) {
-            if (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
+            if (!is_null($update->callbackQuery())) {
+                $this->handleByCallback($bot, $update->callbackQuery());
+            } elseif (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
                 $this->handleByMessage($bot, $update->message());
             }
+
             $bot->update(['offset' => $update->id()]);
             Log::info('Update handled', ['update' => $update->toArray()]);
         }
@@ -57,7 +62,39 @@ class PollHandler
             $status === Status::CONFIGURATION => NeedStateHandler::dispatch($message, $lockpick),
             $status === Status::UNLOCKING =>
                 $chat->message(__('telegram_bot.unlocking_in_progress'))->send(),
-            $status === Status::UNLOCKED => FullInstructionHandler::dispatch($lockpick),
+            $status === Status::UNLOCKED =>
+                $chat->message(__('telegram_bot.already_unlocked'))
+                    ->keyboard(fn(Keyboard $keyboard) => $keyboard->buttons([
+                        Button::make(__('telegram_bot.step_by_step'))->action('step_by_step'),
+                        Button::make(__('telegram_bot.full_instruction'))->action('full_instruction'),
+                    ]))
+                    ->send(),
+        };
+    }
+
+    private function handleByCallback(TelegraphBot $bot, CallbackQuery $callbackQuery): void
+    {
+        $action = $callbackQuery->data()->get('action');
+
+        if (!$action) {
+            return;
+        }
+
+        $chatId = $callbackQuery->message()->chat()->id();
+        /** @var TelegraphChat $chat */
+        $chat = $bot->chats()->firstOrCreate(['chat_id' => $chatId]);
+        /** @var Lockpick|null $lockpick */
+        $lockpick = Lockpick::query()->where(['chat_id' => $chat->id])->first();
+
+        if (!$lockpick || $lockpick->status->name !== Status::UNLOCKED) {
+            return;
+        }
+
+        $bot->replyWebhook($callbackQuery->id(), '')->send();
+
+        match ($action) {
+            'full_instruction' => FullInstructionHandler::dispatch($lockpick),
+            'step_by_step' => null,
         };
     }
 }
