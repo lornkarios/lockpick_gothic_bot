@@ -10,5 +10,7 @@ cd /root/lockpick_gothic_bot/php
 docker run \
   --network=lockpick_gothic_bot_network \
   --name=php \
-  lornkarios/lockpick-gothic-api-bot -d
+  --restart=on-failure \
+  --env-file=.env \
+  lornkarios/lockpick-gothic-api-bot
 echo "Finish deploying!"
