@@ -76,8 +76,10 @@ class PollHandler
                 $chat->message(__('telegram_bot.step_reminder'))->send(),
             };
         } catch (Throwable $e) {
-            $chat->message('Произошла ошибка - ' . $e->getMessage());
-            throw  $e;
+            Log::error('Message handling error: ' . $e->getMessage(), [
+                'text' => $message->text(),
+                'chat_id' => $message->chat()->id(),
+            ]);
         }
     }
 
@@ -89,8 +91,14 @@ class PollHandler
             return;
         }
 
-        $chatId = $callbackQuery->message()->chat()->id();
+        $message = $callbackQuery->message();
+
+        if (!$message || !$message->chat()) {
+            return;
+        }
+
         try {
+            $chatId = $message->chat()->id();
             /** @var TelegraphChat $chat */
             $chat = $bot->chats()->firstOrCreate(['chat_id' => $chatId]);
             /** @var Lockpick|null $lockpick */
@@ -119,8 +127,10 @@ class PollHandler
                 StepByStepHandler::dispatch($lockpick, true);
             }
         } catch (Throwable $e) {
-            $chat->message('Произошла ошибка - ' . $e->getMessage());
-            throw  $e;
+            Log::error('Callback handling error: ' . $e->getMessage(), [
+                'action' => $action,
+                'chat_id' => $message->chat()->id() ?? null,
+            ]);
         }
     }
 }
