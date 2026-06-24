@@ -7,7 +7,7 @@ echo "Pull image"
 docker pull lornkarios/lockpick-gothic-api-bot
 echo "Start php container"
 cd /root/lockpick_gothic_bot/php
-docker run \
+docker run -d \
   --network=lockpick_gothic_bot_network \
   --name=php \
   --restart=on-failure \
