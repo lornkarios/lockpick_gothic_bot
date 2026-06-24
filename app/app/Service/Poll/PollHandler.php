@@ -10,6 +10,7 @@ use App\Service\UnlockStates\FullInstructionHandler;
 use App\Service\UnlockStates\NeedConfigurationHandler;
 use App\Service\UnlockStates\NeedStateHandler;
 use App\Service\UnlockStates\StartHandler;
+use App\Service\UnlockStates\StepByStepHandler;
 use DefStudio\Telegraph\DTO\CallbackQuery;
 use DefStudio\Telegraph\DTO\Message;
 use DefStudio\Telegraph\Keyboard\Button;
@@ -69,6 +70,8 @@ class PollHandler
                         Button::make(__('telegram_bot.full_instruction'))->action('full_instruction'),
                     ]))
                     ->send(),
+            $status === Status::STEP_BY_STEP_UNLOCKING =>
+                $chat->message(__('telegram_bot.step_reminder'))->send(),
         };
     }
 
@@ -86,15 +89,27 @@ class PollHandler
         /** @var Lockpick|null $lockpick */
         $lockpick = Lockpick::query()->where(['chat_id' => $chat->id])->first();
 
-        if (!$lockpick || $lockpick->status->name !== Status::UNLOCKED) {
+        if (!$lockpick) {
             return;
         }
 
-        $bot->replyWebhook($callbackQuery->id(), '')->send();
+        $status = $lockpick->status->name;
 
-        match ($action) {
-            'full_instruction' => FullInstructionHandler::dispatch($lockpick),
-            'step_by_step' => null,
-        };
+        if ($action === 'full_instruction' && $status === Status::UNLOCKED) {
+            $bot->replyWebhook($callbackQuery->id(), '')->send();
+            FullInstructionHandler::dispatch($lockpick);
+            return;
+        }
+
+        if ($action === 'step_by_step' && $status === Status::UNLOCKED) {
+            $bot->replyWebhook($callbackQuery->id(), '')->send();
+            StepByStepHandler::dispatch($lockpick);
+            return;
+        }
+
+        if ($action === 'next_step' && $status === Status::STEP_BY_STEP_UNLOCKING) {
+            $bot->replyWebhook($callbackQuery->id(), '')->send();
+            StepByStepHandler::dispatch($lockpick, true);
+        }
     }
 }
