@@ -6,7 +6,9 @@ namespace App\Service\Poll;
 
 use App\Enums\Status;
 use App\Models\Lockpick;
-use App\Models\LockpickStatus;
+use App\Service\UnlockStates\NeedConfigurationHandler;
+use App\Service\UnlockStates\NeedStateHandler;
+use App\Service\UnlockStates\StartHandler;
 use DefStudio\Telegraph\DTO\Message;
 use App\Models\TelegraphBot;
 use DefStudio\Telegraph\Models\TelegraphChat;
@@ -49,55 +51,9 @@ class PollHandler
 
         $status = $lockpick?->status->name;
         match (true) {
-            $message->text() === '/start' => $this->start($chat, $message),
-            $status === Status::START => $this->needConfiguration($chat, $message, $lockpick),
-            $status === Status::CONFIGURATION => $this->needState($chat, $message, $lockpick),
+            $message->text() === '/start' => StartHandler::dispatch($chat),
+            $status === Status::START => NeedConfigurationHandler::dispatch($chat, $message, $lockpick),
+            $status === Status::CONFIGURATION => NeedStateHandler::dispatch($chat, $message, $lockpick),
         };
-    }
-
-    private function start(TelegraphChat $chat, Message $message): void
-    {
-        /** @var Lockpick $lockpick */
-        $lockpick = Lockpick::query()->updateOrCreate(
-            ['chat_id' => $chat->id],
-            [
-                'status_id' => LockpickStatus::firstByName(Status::START)->id,
-                'lock_levers_count' => 0,
-                'lock_configuration' => null,
-                'lock_state' => null,
-                'lockpick_history_id' => null,
-            ],
-        );
-        $lockpick->history()->delete();
-        $chat->message(__('telegram_bot.welcome') . __('telegram_bot.config_rule'))->send();
-    }
-
-    private function needConfiguration(TelegraphChat $chat, Message $message, Lockpick $lockpick): void
-    {
-        //TODO validate config
-        if ($invalid) {
-            $chat->message(__('telegram_bot.invalid_config') . __('telegram_bot.config_rule'))->send();
-        }
-        //TODO create config from message
-
-        $lockpick->lock_configuration = $lockConfig;
-        $lockpick->status_id = LockpickStatus::firstByName(Status::CONFIGURATION)->id;
-        $lockpick->save();
-        $chat->message(__('telegram_bot.config_valid'). __('telegram_bot.state_rule'))->send();
-    }
-
-    private function needState(TelegraphChat $chat, Message $message, Lockpick $lockpick): void
-    {
-        //TODO validate state
-        if ($invalid) {
-            $chat->message(__('telegram_bot.invalid_state'). __('telegram_bot.state_rule'))->send();
-        }
-        //TODO create state from message
-
-        $lockpick->lock_configuration = $state;
-        $lockpick->status_id = LockpickStatus::firstByName(Status::UNLOCKING)->id;
-        $lockpick->save();
-        $chat->message(__('telegram_bot.state_valid'))->send();
-        //TODO unlocking lock
     }
 }
