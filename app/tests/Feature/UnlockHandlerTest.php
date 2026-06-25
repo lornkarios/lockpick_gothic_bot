@@ -73,8 +73,8 @@ class UnlockHandlerTest extends TestCase
         $this->assertSame(Status::UNLOCKED, $lockpick->status->name);
         $this->assertHistorySequence($lockpick, [
             ['state' => [3, 4, 4]],
-            ['state' => [3, 3, 4], 'is_up' => true, 'lever_number' => 2],
-            ['state' => [4, 4, 4], 'is_up' => false, 'lever_number' => 1],
+            ['state' => [4, 5, 4], 'is_up' => false, 'lever_number' => 1],
+            ['state' => [4, 4, 4], 'is_up' => true, 'lever_number' => 2],
         ]);
     }
 
@@ -138,12 +138,12 @@ class UnlockHandlerTest extends TestCase
         $lockpick = Lockpick::factory()->create([
             'lock_configuration' => new LockConfiguration([
                 new LeverConfiguration(1, [new LeverAffect(2, Direction::TOGETHER)]),
-                new LeverConfiguration(2, []),
+                new LeverConfiguration(2, [new LeverAffect(1, Direction::TOGETHER)]),
                 new LeverConfiguration(3, []),
             ]),
             'lock_state' => new LockState([
-                new LeverState(1, 2),
-                new LeverState(2, 2),
+                new LeverState(1, 7),
+                new LeverState(2, 6),
                 new LeverState(3, 2),
             ]),
         ]);

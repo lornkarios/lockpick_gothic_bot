@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace App\ValueObjects;
 
 use App\Enums\Direction;
+use App\ValueObjects\LockConfiguration\LeverAffect;
 use App\ValueObjects\LockConfiguration\LeverConfiguration;
 use App\ValueObjects\LockState\LeverState;
 use Exception;
 
 class Lever
 {
-    public function __construct(private LeverConfiguration $config, private LeverState $state, private Levers $levers)
+    public function __construct(private LeverConfiguration $config, private LeverState $state, private Lock $lock)
     {
     }
 
@@ -24,12 +25,8 @@ class Lever
         if (!$withAffected) {
             return;
         }
-        foreach ($this->levers->affected($this->number(), Direction::TOGETHER) as $affected) {
-            $affected->up(false);
-        }
-        foreach ($this->levers->affected($this->number(), Direction::SEPARATE) as $affected) {
-            $affected->down(false);
-        }
+        $this->moveAffected(Direction::TOGETHER, true);
+        $this->moveAffected(Direction::SEPARATE, true);
     }
 
     public function down(bool $withAffected = true): void
@@ -41,12 +38,8 @@ class Lever
         if (!$withAffected) {
             return;
         }
-        foreach ($this->levers->affected($this->number(), Direction::TOGETHER) as $affected) {
-            $affected->down(false);
-        }
-        foreach ($this->levers->affected($this->number(), Direction::SEPARATE) as $affected) {
-            $affected->up(false);
-        }
+        $this->moveAffected(Direction::TOGETHER, false);
+        $this->moveAffected(Direction::SEPARATE, false);
     }
 
     public function canUp(bool $withAffected = true): bool
@@ -55,13 +48,8 @@ class Lever
         if (!$withAffected) {
             return $canUp;
         }
-        foreach ($this->levers->affected($this->number(), Direction::TOGETHER) as $affected) {
-            $canUp = $canUp && $affected->canUp(false);
-        }
-        foreach ($this->levers->affected($this->number(), Direction::SEPARATE) as $affected) {
-            $canUp = $canUp && $affected->canDown(false);
-        }
-        return $canUp;
+        $canUp = $canUp && $this->canMoveAffected(Direction::TOGETHER, true);
+        return $canUp && $this->canMoveAffected(Direction::SEPARATE, true);
     }
 
     public function canDown(bool $withAffected = true): bool
@@ -70,13 +58,8 @@ class Lever
         if (!$withAffected) {
             return $canDown;
         }
-        foreach ($this->levers->affected($this->number(), Direction::TOGETHER) as $affected) {
-            $canDown = $canDown && $affected->canDown(false);
-        }
-        foreach ($this->levers->affected($this->number(), Direction::SEPARATE) as $affected) {
-            $canDown = $canDown && $affected->canUp(false);
-        }
-        return $canDown;
+        $canDown = $canDown && $this->canMoveAffected(Direction::TOGETHER, false);
+        return $canDown && $this->canMoveAffected(Direction::SEPARATE, false);
     }
 
     public function number(): int
@@ -92,5 +75,55 @@ class Lever
     public function config(): LeverConfiguration
     {
         return $this->config;
+    }
+
+    private function canMoveAffected(Direction $direction, bool $isUp): bool
+    {
+        $canMove = true;
+        $affectedNumbers = $this->affectedNumbers($direction);
+        foreach ($this->lock->levers() as $lever) {
+            if (!in_array($lever->number(), $affectedNumbers)) {
+                continue;
+            }
+            $canMoveItem = $direction === Direction::TOGETHER ?
+                ($isUp ? $lever->canUp(false) : $lever->canDown(false)) :
+                ($isUp ? $lever->canDown(false) : $lever->canUp(false));
+            $canMove = $canMove && $canMoveItem;
+        }
+        return $canMove;
+    }
+
+    private function moveAffected(Direction $direction, bool $isUp): void
+    {
+        $affectedNumbers = $this->affectedNumbers($direction);
+        foreach ($this->lock->levers() as $lever) {
+            if (!in_array($lever->number(), $affectedNumbers)) {
+                continue;
+            }
+            if ($direction === Direction::TOGETHER) {
+                if ($isUp) {
+                    $lever->up(false);
+                } else {
+                    $lever->down(false);
+                }
+            } else {
+                if ($isUp) {
+                    $lever->down(false);
+                } else {
+                    $lever->up(false);
+                }
+            }
+        }
+    }
+
+    private function affectedNumbers(Direction $direction)
+    {
+        return array_map(
+            fn(LeverAffect $affect) => $affect->number(),
+            array_filter(
+                $this->config()->affects(),
+                fn(LeverAffect $affect) => $affect->direction() === $direction,
+            ),
+        );
     }
 }

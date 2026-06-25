@@ -14,7 +14,7 @@ class AsLock implements CastsAttributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): Lock
     {
-        return new Lock($attributes['lock_configuration'], $attributes['lock_state']);
+        return new Lock($model->lock_configuration, $model->lock_state);
     }
 
     /**

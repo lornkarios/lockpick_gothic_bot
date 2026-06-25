@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\ValueObjects\LockState;
 
+use Exception;
+
 class LockState
 {
     /**
@@ -35,5 +37,15 @@ class LockState
             $arr[$state->number() - 1] = $state->position();
         }
         return $arr;
+    }
+
+    public function setFromArray(array $state): void
+    {
+        $levers = [];
+        foreach ($state as $index => $position) {
+            $number = $index + 1;
+            $levers[] = new LeverState($number, $position);
+        }
+        $this->levers = $levers;
     }
 }

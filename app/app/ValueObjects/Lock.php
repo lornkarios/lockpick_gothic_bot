@@ -7,10 +7,11 @@ namespace App\ValueObjects;
 use App\ValueObjects\LockConfiguration\LockConfiguration;
 use App\ValueObjects\LockState\LeverState;
 use App\ValueObjects\LockState\LockState;
+use Exception;
 
 class Lock
 {
-    private Levers $levers;
+    private array $levers;
 
     public function __construct(private readonly LockConfiguration $config, private readonly LockState $state)
     {
@@ -60,18 +61,37 @@ class Lock
     {
         return count($this->state()->levers());
     }
+    /**
+     * @return Lever[]
+     */
+    public function levers(): array
+    {
+        return $this->levers;
+    }
+
+    public function lever(int $number): Lever
+    {
+        foreach ($this->levers as $lever) {
+            if ($lever->number() === $number) {
+                return $lever;
+            }
+        }
+        throw new Exception("Lever $number not found");
+    }
+
+    public function stateFromArray(array $stateArr): void
+    {
+        $this->state->setFromArray($stateArr);
+        $this->setLevers();
+    }
 
     private function setLevers(): void
     {
-        $this->levers = new Levers();
+        $this->levers = [];
         foreach ($this->state()->levers() as $state) {
             $config = $this->config()->lever($state->number());
-            $this->levers->add(new Lever($config, $state, $this->levers));
+            $this->levers[] = new Lever($config, $state, $this);
         }
     }
 
-    private function lever(int $number): Lever
-    {
-        return $this->levers->lever($number);
-    }
 }
