@@ -19,12 +19,12 @@ class LeverState
 
     public function canUp(): bool
     {
-        return $this->position - 1 > self::MIN_POSITION;
+        return $this->position - 1 >= self::MIN_POSITION;
     }
 
     public function canDown(): bool
     {
-        return $this->position + 1 < self::MAX_POSITION;
+        return $this->position + 1 <= self::MAX_POSITION;
     }
 
     public function up(): void

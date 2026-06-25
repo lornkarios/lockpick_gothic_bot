@@ -34,8 +34,8 @@ class Lever
 
     public function down(bool $withAffected = true): void
     {
-        if (!$this->canDown()) {
-            throw new Exception('Lever can\'t be up');
+        if (!$this->canDown($withAffected)) {
+            throw new Exception('Lever can\'t be down');
         }
         $this->state()->down();
         if (!$withAffected) {

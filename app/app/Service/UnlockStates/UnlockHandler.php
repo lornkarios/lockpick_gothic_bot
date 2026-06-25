@@ -91,7 +91,7 @@ class UnlockHandler
             $this->move($lock, $leverNumber, $direction);
             if ($this->isStateAlreadyPassed($lock->state()->toArray(), $historyStates)) {
                 $this->move($lock, $leverNumber, $this->inverseDirection($direction));
-                return ['status' => false, 'history' => $historyStates];
+                return null;
             }
             $res = $this->unlock(
                 $lock,

@@ -78,6 +78,60 @@ class UnlockHandlerTest extends TestCase
         ]);
     }
 
+    public function test_handle_difficult_lock_success(): void
+    {
+        /** @var Lockpick $lockpick */
+        $lockpick = Lockpick::factory()->create([
+            'lock_configuration' => new LockConfiguration([
+                new LeverConfiguration(
+                    1,
+                    [
+                        new LeverAffect(2, Direction::SEPARATE),
+                        new LeverAffect(3, Direction::SEPARATE),
+                        new LeverAffect(5, Direction::SEPARATE),
+                    ]
+                ),
+                new LeverConfiguration(
+                    2,
+                    [
+                        new LeverAffect(4, Direction::TOGETHER),
+                        new LeverAffect(6, Direction::TOGETHER),
+                    ]
+                ),
+                new LeverConfiguration(
+                    3,
+                    [
+                        new LeverAffect(2, Direction::TOGETHER),
+                        new LeverAffect(6, Direction::SEPARATE),
+                    ]
+                ),
+                new LeverConfiguration(4, []),
+                new LeverConfiguration(5, [new LeverAffect(1, Direction::SEPARATE)]),
+                new LeverConfiguration(
+                    6,
+                    [
+                        new LeverAffect(3, Direction::TOGETHER),
+                        new LeverAffect(5, Direction::TOGETHER),
+                    ]
+                ),
+            ]),
+            'lock_state' => new LockState([
+                new LeverState(1, 1),
+                new LeverState(2, 2),
+                new LeverState(3, 7),
+                new LeverState(4, 7),
+                new LeverState(5, 6),
+                new LeverState(6, 5),
+            ]),
+        ]);
+
+        $handler = new UnlockHandler($lockpick);
+        $handler->handle();
+
+        $lockpick->refresh();
+        $this->assertSame(Status::UNLOCKED, $lockpick->status->name);
+    }
+
     public function test_handle_impossible_lock(): void
     {
         /** @var Lockpick $lockpick */
