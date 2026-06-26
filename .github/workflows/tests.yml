@@ -21,8 +21,6 @@ jobs:
           php-version: 8.2
           coverage: none
 
-      - run: cp .env.example .env
-
       - run: composer install --no-interaction --prefer-dist
 
-      - run: php vendor/bin/phpunit
+      - run: php vendor/bin/phpunit --configuration phpunit.xml tests
