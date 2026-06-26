@@ -115,19 +115,19 @@ class PollHandler
             $status = $lockpick->status->name;
 
             if ($action === 'full_instruction' && $status === Status::UNLOCKED) {
-                $bot->replyWebhook($callbackQuery->id(), '')->send();
+                $bot->replyWebhook($callbackQuery->id(), ' ')->send();
                 FullInstructionHandler::dispatch($lockpick);
                 return;
             }
 
             if ($action === 'step_by_step' && $status === Status::UNLOCKED) {
-                $bot->replyWebhook($callbackQuery->id(), '')->send();
+                $bot->replyWebhook($callbackQuery->id(), ' ')->send();
                 StepByStepHandler::dispatch($lockpick);
                 return;
             }
 
             if ($action === 'next_step' && $status === Status::STEP_BY_STEP_UNLOCKING) {
-                $bot->replyWebhook($callbackQuery->id(), '')->send();
+                $bot->replyWebhook($callbackQuery->id(), ' ')->send();
                 StepByStepHandler::dispatch($lockpick, true);
             }
         } catch (Throwable $e) {

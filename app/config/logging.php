@@ -115,7 +115,13 @@ return [
             ],
             'formatter' => JsonFormatter::class
         ],
-
+        'json_daily' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'formatter' => JsonFormatter::class,
+            'days' => env('LOG_ROTATE_DAYS', 2),
+        ],
         'syslog' => [
             'driver' => 'syslog',
             'level' => env('LOG_LEVEL', 'debug'),
