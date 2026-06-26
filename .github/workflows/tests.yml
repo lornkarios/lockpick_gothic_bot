@@ -28,6 +28,7 @@ jobs:
       - name: Make code coverage badge
         uses: timkrase/phpunit-coverage-badge@v1.2.1
         with:
-          report: clover.xml
+          report: app/clover.xml
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           coverage_badge_path: output/coverage.svg
           push_badge: true
