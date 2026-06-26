@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1782504892">
-  <project timestamp="1782504892" name="Clover Coverage">
+<coverage generated="1782505049">
+  <project timestamp="1782505049" name="Clover Coverage">
     <package name="App\Casts">
       <file name="/home/runner/work/lockpick_gothic_bot/lockpick_gothic_bot/app/app/Casts/AsLock.php">
         <class name="App\Casts\AsLock" namespace="App\Casts">
