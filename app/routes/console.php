@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('bot:poll')
     ->everySecond()
-    ->onOneServer();
+    ->withoutOverlapping();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());

@@ -44,15 +44,15 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v4
 
-      - name: Copy deploy files to server
+      - name: Copy deploy files to php
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SERVER_HOST }}
           port: ${{ secrets.SERVER_PORT }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          source: "deploy_scripts/php/*"
-          target: "/root/lockpick_gothic_bot/php"
+          source: "deploy_scripts/*"
+          target: "/root/lockpick_gothic_bot"
           strip_components: 2
 
       - name: Create .env file on server
@@ -64,6 +64,9 @@ jobs:
           password: ${{ secrets.PASSWORD }}
           script: |
             cat > /root/lockpick_gothic_bot/php/.env << 'EOF'
+            ${{ secrets.ENV_FILE }}
+            EOF
+            && cat > /root/lockpick_gothic_bot/queue/.env << 'EOF'
             ${{ secrets.ENV_FILE }}
             EOF
 

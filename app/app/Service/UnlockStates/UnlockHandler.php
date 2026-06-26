@@ -12,11 +12,11 @@ use App\ValueObjects\LockState\LeverState;
 use App\ValueObjects\LockState\LockState;
 use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
-use Generator;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 
-class UnlockHandler
+class UnlockHandler implements ShouldQueue
 {
     use Dispatchable;
 
@@ -67,15 +67,49 @@ class UnlockHandler
                 $levers[] = new LeverState($index + 1, $position);
             }
 
+            $res = $this->isUpAndLeverNumber($histories, $stateArray);
             $this->lockpick->history()->create([
                 'lock_state' => new LockState($levers),
-//                'is_up' => $historyState['is_up'] ?? null,
-//                'lever_number' => $historyState['lever_number'] ?? null,
+                'is_up' => $res['is_up'] ?? null,
+                'lever_number' => $res['lever_number'] ?? null,
             ]);
         }
     }
 
-    private function unlock(Lock $lock): int
+    private function isUpAndLeverNumber(array $histories, array $historyState): array
+    {
+        $state = $this->encodeState($historyState);
+        $index = array_search($state, $histories, true);
+
+        if ($index === false || $index === 0) {
+            return ['is_up' => null, 'lever_number' => null];
+        }
+
+        $prevState = $this->decode($histories[$index - 1], count($historyState));
+        $config = $this->lockpick->lock_configuration?->toArray() ?? [];
+
+        for ($leverNumber = 1; $leverNumber <= count($historyState); $leverNumber++) {
+            $lock = new Lock($prevState, $config);
+            if ($lock->canUp($leverNumber)) {
+                $lock->up($leverNumber);
+                if ($lock->stateToArray() === $historyState) {
+                    return ['is_up' => true, 'lever_number' => $leverNumber];
+                }
+            }
+
+            $lock = new Lock($prevState, $config);
+            if ($lock->canDown($leverNumber)) {
+                $lock->down($leverNumber);
+                if ($lock->stateToArray() === $historyState) {
+                    return ['is_up' => false, 'lever_number' => $leverNumber];
+                }
+            }
+        }
+
+        return ['is_up' => null, 'lever_number' => null];
+    }
+
+    private function unlock(Lock $lock): ?int
     {
         $successState = $this->getSuccessLockState($lock);
         $state = $this->encodeState($lock->stateToArray());
@@ -83,7 +117,6 @@ class UnlockHandler
         $history = [$state => 1];
         $this->parent = [];
         $child = [];
-        $iteration = 0;
         while (count($stack) > 0) {
             $curState = array_pop($stack);
 
@@ -94,15 +127,12 @@ class UnlockHandler
 
             $finishStates = $this->finishStates($lock, $curState, $history);
             foreach ($finishStates as $finishState) {
-                $iteration++;
                 array_unshift($stack, $finishState);
                 $this->parent[$finishState] = $curState;
                 $child[$curState] = $finishState;
             }
-            if ($iteration > 20000) {
-                $this->depth($state, $child);
-            }
         }
+        return null;
     }
 
     private function getSuccessLockState(
