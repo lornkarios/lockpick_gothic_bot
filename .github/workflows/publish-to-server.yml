@@ -78,4 +78,4 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
           script_stop: true
-          script: cd /root/lockpick_gothic_bot/php && bash deploy.sh
+          script: cd /root/lockpick_gothic_bot/php && bash deploy.sh && cd ../queue && bash deploy.sh
