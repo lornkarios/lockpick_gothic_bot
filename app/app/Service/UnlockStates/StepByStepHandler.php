@@ -36,8 +36,7 @@ class StepByStepHandler implements ShouldQueue
 
     private function start(): void
     {
-        $histories = $this->lockpick->history()->orderBy('id')->get();
-        $initialState = $histories->first();
+        $initialState = $this->lockpick->history()->orderBy('id')->first();
 
         $this->lockpick->status_id = LockpickStatus::firstByName(Status::STEP_BY_STEP_UNLOCKING)->id;
         $this->lockpick->lockpick_history_id = $initialState->id;
@@ -105,7 +104,6 @@ class StepByStepHandler implements ShouldQueue
         return LockpickHistory::query()
             ->where('lockpick_id', $this->lockpick->id)
             ->where('id', '>', $historyId)
-            ->whereNotNull('lever_number')
             ->orderBy('id')
             ->first();
     }
