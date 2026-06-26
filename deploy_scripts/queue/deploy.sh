@@ -9,7 +9,8 @@ docker run -d \
   --name=queue \
   --restart=on-failure \
    -v ./storage/logs:/var/www/html/storage/logs \
+   -v ./entrypoint.sh:/var/www/html/entrypoint.sh
   --env-file=.env \
-  --entrypoint=./entrypoint.sh \
+  --entrypoint=/var/www/html/entrypoint.sh \
   lornkarios/lockpick-gothic-api-bot
 echo "Finish deploying!"
