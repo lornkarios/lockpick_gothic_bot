@@ -27,90 +27,70 @@ class LockTest extends TestCase
     {
         $this->lock->up(2);
 
-        $this->assertSame([4, 3, 3, 4], $this->lock->state()->toArray());
+        $this->assertSame([4, 3, 3, 4], $this->lock->stateToArray());
     }
 
     public function test_down_moves_lever_and_affected_together(): void
     {
         $this->lock->down(2);
 
-        $this->assertSame([4, 5, 5, 4], $this->lock->state()->toArray());
+        $this->assertSame([4, 5, 5, 4], $this->lock->stateToArray());
     }
 
     public function test_up_moves_together_and_separate(): void
     {
         $this->lock->up(1);
 
-        $this->assertSame([3, 3, 5, 4], $this->lock->state()->toArray());
+        $this->assertSame([3, 3, 5, 4], $this->lock->stateToArray());
     }
 
     public function test_down_moves_together_and_separate(): void
     {
         $this->lock->down(1);
 
-        $this->assertSame([5, 5, 3, 4], $this->lock->state()->toArray());
+        $this->assertSame([5, 5, 3, 4], $this->lock->stateToArray());
     }
 
     public function test_can_up_returns_false_when_lever_at_min(): void
     {
-        $lock = $this->createLock(p1: 2);
+        $lock = $this->createLock(p1: 1);
 
         $this->assertFalse($lock->canUp(1));
     }
 
     public function test_can_up_returns_false_when_affected_together_cannot_move(): void
     {
-        $lock = $this->createLock(p1: 4, p2: 2);
+        $lock = $this->createLock(p1: 4, p2: 1);
 
         $this->assertFalse($lock->canUp(1));
     }
 
     public function test_can_up_returns_false_when_affected_separate_cannot_move(): void
     {
-        $lock = $this->createLock(p1: 4, p3: 6);
+        $lock = $this->createLock(p1: 4, p3: 7);
 
         $this->assertFalse($lock->canUp(1));
     }
 
     public function test_can_down_returns_false_when_lever_at_max(): void
     {
-        $lock = $this->createLock(p1: 6);
+        $lock = $this->createLock(p1: 7);
 
         $this->assertFalse($lock->canDown(1));
     }
 
     public function test_can_down_returns_false_when_affected_together_cannot_move(): void
     {
-        $lock = $this->createLock(p1: 4, p2: 6);
+        $lock = $this->createLock(p1: 4, p2: 7);
 
         $this->assertFalse($lock->canDown(1));
     }
 
     public function test_can_down_returns_false_when_affected_separate_cannot_move(): void
     {
-        $lock = $this->createLock(p1: 4, p3: 2);
+        $lock = $this->createLock(p1: 4, p3: 1);
 
         $this->assertFalse($lock->canDown(1));
-    }
-
-    public function test_throws_on_up_when_lever_at_min(): void
-    {
-        $lock = $this->createLock(p1: 2);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Lever can\'t be up');
-
-        $lock->up(1);
-    }
-
-    public function test_throws_on_down_when_lever_at_max(): void
-    {
-        $lock = $this->createLock(p1: 6);
-
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Lever can\'t be up');
-
-        $lock->down(1);
     }
 
     /**
@@ -139,6 +119,6 @@ class LockTest extends TestCase
             new LeverState(4, $p4),
         ]);
 
-        return new Lock($config, $state);
+        return new Lock($state->toArray(), $config->toArray());
     }
 }

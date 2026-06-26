@@ -29,16 +29,16 @@ class UnlockHandler implements ShouldQueue
     public function handle(): void
     {
         $state = $this->unlock($this->lockpick->lock);
-
+        $this->lockpick->refresh();
         if (is_null($state)) {
             $this->lockpick->status_id = LockpickStatus::firstByName(Status::NOT_UNLOCKABLE)->id;
+            unset($this->lockpick->lock);
             $this->lockpick->save();
             $this->lockpick->chat->message(__('telegram_bot.unlock_impossible'))->send();
             return;
         }
 
         DB::transaction(function () use ($state) {
-            $this->lockpick->refresh();
             $this->saveHistory($state);
             $this->lockpick->status_id = LockpickStatus::firstByName(Status::UNLOCKED)->id;
             $this->lockpick->save();

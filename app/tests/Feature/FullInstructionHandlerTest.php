@@ -55,7 +55,7 @@ class FullInstructionHandlerTest extends TestCase
         $this->assertCount(2, $requests);
 
         $body = json_decode($requests[1][0]->body(), true);
-        $this->assertStringContainsString('Lever 2 up', $body['text']);
-        $this->assertStringContainsString('Lever 1 down', $body['text']);
+        $this->assertStringContainsString('1. 1 часть вниз', $body['text']);
+        $this->assertStringContainsString('2. 2 часть вверх', $body['text']);
     }
 }

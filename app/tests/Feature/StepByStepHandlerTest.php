@@ -66,7 +66,7 @@ class StepByStepHandlerTest extends TestCase
             '- - -',
             '- - -',
             '- - -',
-            'Move lever 2 up',
+            'Передвинь 1 часть вниз',
         ]), $body['text']);
 
         $advanceHandler = new StepByStepHandler($lockpick, true);
@@ -80,12 +80,12 @@ class StepByStepHandlerTest extends TestCase
         $this->assertSame(implode("\n", [
             '- - -',
             '- - -',
-            '0 0 -',
-            '- - 0',
+            '- - -',
+            '0 - 0',
+            '- 0 -',
             '- - -',
             '- - -',
-            '- - -',
-            'Move lever 1 down',
+            'Передвинь 2 часть вверх',
         ]), $body['text']);
 
         $advanceHandler = new StepByStepHandler($lockpick, true);
@@ -105,7 +105,7 @@ class StepByStepHandlerTest extends TestCase
             '- - -',
             '- - -',
             '- - -',
-            'All steps complete! Lock is unlocked.',
+            'Все шаги выполнены! Замок открыт.',
         ]), $body['text']);
     }
 }
