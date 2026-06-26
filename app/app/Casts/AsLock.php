@@ -2,19 +2,21 @@
 
 namespace App\Casts;
 
+use App\Models\Lockpick;
 use App\ValueObjects\Lock;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Database\Eloquent\Model;
-use InvalidArgumentException;
+use RuntimeException;
 
 class AsLock implements CastsAttributes
 {
     /**
+     * @param Lockpick $model
      * @param array<string, mixed> $attributes
      */
     public function get(Model $model, string $key, mixed $value, array $attributes): Lock
     {
-        return new Lock($model->lock_configuration, $model->lock_state);
+        return new Lock($model->lock_state->toArray(), $model->lock_configuration->toArray());
     }
 
     /**
@@ -22,13 +24,6 @@ class AsLock implements CastsAttributes
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
-        if (!$value instanceof Lock) {
-            throw new InvalidArgumentException('The given value is not an Lock instance.');
-        }
-
-        return [
-            'lock_configuration' => $value->config(),
-            'lock_state' => $value->state(),
-        ];
+        throw new RuntimeException('Method set() not implemented.');
     }
 }

@@ -75,14 +75,32 @@ class UnlockHandler
         }
     }
 
-    private function unlock(
-        Lock $lock
-    ): ?int {
+    private function unlock(Lock $lock): int
+    {
         $successState = $this->getSuccessLockState($lock);
-        $generator = $this->depthFirstSearchGenerator($lock, $this->encodeState($lock->state()->toArray()));
-        foreach ($generator as $state) {
-            if ($successState === $state) {
-                return $state;
+        $state = $this->encodeState($lock->stateToArray());
+        $stack = [$state];
+        $history = [$state => 1];
+        $this->parent = [];
+        $child = [];
+        $iteration = 0;
+        while (count($stack) > 0) {
+            $curState = array_pop($stack);
+
+            // Возвращаем узел лениво, не сохраняя в массив
+            if ($curState === $successState) {
+                return $curState;
+            }
+
+            $finishStates = $this->finishStates($lock, $curState, $history);
+            foreach ($finishStates as $finishState) {
+                $iteration++;
+                array_unshift($stack, $finishState);
+                $this->parent[$finishState] = $curState;
+                $child[$curState] = $finishState;
+            }
+            if ($iteration > 20000) {
+                $this->depth($state, $child);
             }
         }
     }
@@ -97,33 +115,6 @@ class UnlockHandler
         return $this->encodeState($unlockedState);
     }
 
-    private function depthFirstSearchGenerator(Lock $lock, int $state): Generator
-    {
-        $stack = [$state];
-        $history = [$state];
-        $this->parent = [];
-        $child = [];
-        $iteration = 0;
-        while (count($stack) > 0) {
-            $curState = array_pop($stack);
-
-            // Возвращаем узел лениво, не сохраняя в массив
-            yield $curState;
-
-            $finishStates = $this->finishStates($lock, $curState, $history);
-            $history = array_unique(array_merge($history, $finishStates));
-            foreach ($finishStates as $finishState) {
-                $iteration++;
-                array_unshift($stack, $finishState);
-                $this->parent[$finishState] = $curState;
-                $child[$curState] = $finishState;
-            }
-            if ($iteration > 20000) {
-                $this->depth($state, $child);
-            }
-        }
-    }
-
     private function depth(int $state, array $child): int
     {
         $depth = 0;
@@ -134,20 +125,10 @@ class UnlockHandler
         return $depth;
     }
 
-
-//
-///
-///                      1
-///                1    2    3
-///            1 2 3  1 2 3 1 2 3
-///
-///
-
-
     private function finishStates(
         Lock $lock,
         int $finishState,
-        array $history
+        array &$history
     ): array {
         $newFinishStates = [];
         $lock->stateFromArray($this->decode($finishState, $lock->leversCount()));
@@ -169,17 +150,18 @@ class UnlockHandler
         Lock $lock,
         int $leverNumber,
         string $direction,
-        array $history,
+        array &$history,
     ): ?int {
         if (!$this->canMove($lock, $leverNumber, $direction)) {
             return null;
         }
         $this->move($lock, $leverNumber, $direction);
-        $state = $this->encodeState($lock->state()->toArray());
+        $state = $this->encodeState($lock->stateToArray());
         $this->move($lock, $leverNumber, $this->inverseDirection($direction));
-        if (in_array($state, $history)) {
+        if ($history[$state] ?? 0 === 1) {
             return null;
         }
+        $history[$state] = 1;
         return $state;
     }
 
