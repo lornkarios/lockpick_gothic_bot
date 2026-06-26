@@ -12,10 +12,9 @@ use App\ValueObjects\LockState\LeverState;
 use App\ValueObjects\LockState\LockState;
 use DefStudio\Telegraph\Keyboard\Button;
 use DefStudio\Telegraph\Keyboard\Keyboard;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 
-class StepByStepHandler implements ShouldQueue
+class StepByStepHandler
 {
     use Dispatchable;
 
