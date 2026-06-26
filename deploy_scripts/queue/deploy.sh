@@ -4,6 +4,7 @@ docker stop queue
 docker rm queue
 echo "Start queue container"
 cd /root/lockpick_gothic_bot/queue
+chmod +x entrypoint.sh
 docker run -d \
   --network=lockpick_gothic_bot_network \
   --name=queue \
