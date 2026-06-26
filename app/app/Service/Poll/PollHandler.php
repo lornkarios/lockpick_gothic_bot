@@ -38,6 +38,7 @@ class PollHandler
         $updates = $bot->updates(offset: $bot->offset + 1);
 
         foreach ($updates as $update) {
+            $time = microtime(true);
             if (!is_null($update->callbackQuery())) {
                 $this->handleByCallback($bot, $update->callbackQuery());
             } elseif (!is_null($update->message()?->text()) && !is_null($update->message()?->chat())) {
@@ -45,7 +46,7 @@ class PollHandler
             }
 
             $bot->update(['offset' => $update->id()]);
-            Log::info('Update handled', ['update' => $update->toArray()]);
+            Log::info('Update handled', ['update' => $update->toArray(), 'time' => microtime(true) - $time . 's']);
         }
         sleep(5);
     }
