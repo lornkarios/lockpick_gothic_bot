@@ -20,6 +20,7 @@
     <php>
         <server name="APP_ENV" value="testing"/>
         <server name="APP_MAINTENANCE_DRIVER" value="file"/>
+        <server name="APP_LOCALE" value="ru"/>
         <server name="BCRYPT_ROUNDS" value="4"/>
         <server name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="sqlite"/>
