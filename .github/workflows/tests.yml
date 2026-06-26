@@ -19,14 +19,8 @@ jobs:
       - uses: shivammathur/setup-php@v2
         with:
           php-version: 8.2
-          coverage: pcov
+          coverage: none
 
       - run: composer install --no-interaction --prefer-dist
 
       - run: php vendor/bin/phpunit --configuration phpunit.xml tests
-
-      - name: Make code coverage badge
-        uses: timkrase/phpunit-coverage-badge@v1.2.1
-        with:
-          coverage_badge_path: output/coverage.svg
-          push_badge: true
