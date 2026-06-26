@@ -1,6 +1,7 @@
 # 🔓 Lockpick Gothic Bot
 
 [![Tests](https://github.com/lornkarios/lockpick_gothic_bot/actions/workflows/tests.yml/badge.svg)](https://github.com/lornkarios/lockpick_gothic_bot/actions/workflows/tests.yml)
+[![Coverage](https://raw.githubusercontent.com/lornkarios/lockpick_gothic_bot/master/output/coverage.svg)](https://github.com/lornkarios/lockpick_gothic_bot/actions/workflows/tests.yml)
 ![PHP](https://img.shields.io/badge/PHP-^8.2-777BB4?logo=php&logoColor=white)
 
 > **Взламывай замки в Gothic 1 Remake — не ломай голову.**
