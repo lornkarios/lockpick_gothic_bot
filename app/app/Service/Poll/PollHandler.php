@@ -48,7 +48,6 @@ class PollHandler
             $bot->update(['offset' => $update->id()]);
             Log::info('Update handled', ['update' => $update->toArray(), 'time' => microtime(true) - $time . 's']);
         }
-        sleep(5);
     }
 
     private function handleByMessage(TelegraphBot $bot, Message $message): void
