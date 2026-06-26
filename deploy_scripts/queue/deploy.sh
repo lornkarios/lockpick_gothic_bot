@@ -2,9 +2,6 @@
 echo "Stop container"
 docker stop queue
 docker rm queue
-docker image rm lornkarios/lockpick-gothic-api-bot
-echo "Pull image"
-docker pull lornkarios/lockpick-gothic-api-bot
 echo "Start queue container"
 cd /root/lockpick_gothic_bot/queue
 docker run -d \
