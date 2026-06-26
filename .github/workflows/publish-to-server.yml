@@ -66,7 +66,7 @@ jobs:
             cat > /root/lockpick_gothic_bot/php/.env << 'EOF'
             ${{ secrets.ENV_FILE }}
             EOF
-            && cat > /root/lockpick_gothic_bot/queue/.env << 'EOF'
+            cat > /root/lockpick_gothic_bot/queue/.env << 'EOF'
             ${{ secrets.ENV_FILE }}
             EOF
 
