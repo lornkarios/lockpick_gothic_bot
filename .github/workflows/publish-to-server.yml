@@ -51,9 +51,9 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWORD }}
-          source: "deploy_scripts/*"
+          source: "deploy_scripts/"
           target: "/root/lockpick_gothic_bot"
-          strip_components: 2
+          strip_components: 1
 
       - name: Create .env file on server
         uses: appleboy/ssh-action@master
